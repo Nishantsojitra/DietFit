@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect } from 'react';
 import Nav from '../Nav';
 import { cartitem } from '../Product';
 
@@ -17,6 +17,20 @@ const Cart = () => {
     cvv: '',
   });
 
+  const [csrfToken, setCsrfToken] = useState('');
+
+  useEffect(() => {
+    const getCsrfToken = async () => {
+      const response = await fetch('http://localhost:8000/api/get-csrf-token/', {
+        method: 'GET',
+        mode: 'cors',
+      });
+      const data = await response.json();
+      setCsrfToken(data.csrfToken);
+    };
+    getCsrfToken();
+  }, []);
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -30,15 +44,15 @@ const Cart = () => {
   };
 
   const calculateTotalPrice = () => {
-    return s1.reduce((total, item) => total + item.price * item.q1, 0);  // Calculate total price
+    return s1.reduce((total, item) => total + item.price * item.q1, 0);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const total_price = calculateTotalPrice();  // Get the total price
+    const total_price = calculateTotalPrice();
 
-    // Prepare the data to be sent
+
     const dataToSend = {
       ...formData,
       total_price: total_price,
@@ -49,6 +63,7 @@ const Cart = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
         body: JSON.stringify(dataToSend),
       });
@@ -57,7 +72,7 @@ const Cart = () => {
       if (response.ok) {
         alert(result.message);
         clearcart();
-        setbuy(false);  // Hide form after success
+        setbuy(false);
       } else {
         alert(result.error || 'Something went wrong!');
       }
@@ -72,7 +87,7 @@ const Cart = () => {
       <Nav />
       <div>
         <div style={{ textAlign: 'center', marginTop: '100px' }}>
-          <button onClick={() => showcart(!cartvisible)} style={{marginTop:'50px'}}>
+          <button onClick={() => showcart(!cartvisible)} style={{ marginTop: '50px' }}>
             {cartvisible ? 'Hide Cart' : 'View Your Cart'}
           </button>
         </div>
@@ -203,59 +218,59 @@ const Cart = () => {
           </div>
         )}
       </div>
-      <footer className="footer" style={{marginTop:'200px'}}>
-      <div className="footer-container">
-        <div className="footer-column">
-          <h3>About Us</h3>
-          <p>
-            Heaven diet doesn't over lesser days appear creeping seasons so behold bearing days open.
-          </p>
-          <div className="logo">
-            <h2>Diet Fit</h2>
-            <p>HOME SOLUTION</p>
+      <footer className="footer" style={{ marginTop: '200px' }}>
+        <div className="footer-container">
+          <div className="footer-column">
+            <h3>About Us</h3>
+            <p>
+              Heaven diet doesn't over lesser days appear creeping seasons so behold bearing days open.
+            </p>
+            <div className="logo">
+              <h2>Diet Fit</h2>
+              <p>HOME SOLUTION</p>
+            </div>
+          </div>
+
+          <div className="footer-column">
+            <h3>Contact Info</h3>
+            <p>Savvy Starata,Ahmedabad,Gujarat</p>
+            <p>Phone: +8880 44338899</p>
+            <p>Email: Swasthy@gmail.com</p>
+          </div>
+
+          <div className="footer-column">
+            <h3>Important Link</h3>
+            <ul>
+              <li><a href="#whmcs">Sign in</a></li>
+              <li><a href="#domain">Search Domain</a></li>
+              <li><a href="#account">My Account</a></li>
+              <li><a href="#cart">View Cart</a></li>
+              <li><a href="#shop">Our Shop</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-column">
+            <h3>Newsletter</h3>
+            <p>
+              Heaven diet doesn't over lesser in days. Appear creeping seasons deve behold bearing days open.
+            </p>
+            <form>
+              <input type="email" placeholder="Email Address" />
+              <button type="submit" style={{ width: '100px' }}>Send</button>
+            </form>
           </div>
         </div>
 
-        <div className="footer-column">
-          <h3>Contact Info</h3>
-          <p>Savvy Starata,Ahmedabad,Gujarat</p>
-          <p>Phone: +8880 44338899</p>
-          <p>Email: Swasthy@gmail.com</p>
+        <div className="footer-bottom">
+          <p>Copyright ©2022 All rights reserved </p>
+          <div className="social-icons">
+            <a href="#facebook"><i className="fab fa-facebook-f"></i></a>
+            <a href="#twitter"><i className="fab fa-twitter"></i></a>
+            <a href="#globe"><i className="fas fa-globe"></i></a>
+            <a href="#behance"><i className="fab fa-behance"></i></a>
+          </div>
         </div>
-
-        <div className="footer-column">
-          <h3>Important Link</h3>
-          <ul>
-            <li><a href="#whmcs">Sign in</a></li>
-            <li><a href="#domain">Search Domain</a></li>
-            <li><a href="#account">My Account</a></li>
-            <li><a href="#cart">View Cart</a></li>
-            <li><a href="#shop">Our Shop</a></li>
-          </ul>
-        </div>
-
-        <div className="footer-column">
-          <h3>Newsletter</h3>
-          <p>
-            Heaven diet doesn't over lesser in days. Appear creeping seasons deve behold bearing days open.
-          </p>
-          <form>
-            <input type="email" placeholder="Email Address" />
-            <button type="submit" style={{width:'100px'}}>Send</button>
-          </form>
-        </div>
-      </div>
-
-      <div className="footer-bottom">
-        <p>Copyright ©2022 All rights reserved </p>
-        <div className="social-icons">
-          <a href="#facebook"><i className="fab fa-facebook-f"></i></a>
-          <a href="#twitter"><i className="fab fa-twitter"></i></a>
-          <a href="#globe"><i className="fas fa-globe"></i></a>
-          <a href="#behance"><i className="fab fa-behance"></i></a>
-        </div>
-      </div>
-    </footer>
+      </footer>
     </>
   );
 };

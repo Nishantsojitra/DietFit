@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/login/',views.login),
     path('api/signup/',views.signup),
     path('api/diet-plan/',views.chat),
-    path('api/get-csrf-token/',views.csrf_exempt),
+    path('api/get-csrf-token/',views.get_csrf_token),
     path('buy/', views.buy_product),
     path('api/chatbox/', views.chatbox),
     path('api/del/',views.del_data),

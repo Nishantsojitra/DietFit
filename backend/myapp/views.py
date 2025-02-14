@@ -6,8 +6,13 @@ import json
 from django.core import serializers
 import os
 import google.generativeai as genai
+from django.middleware.csrf import get_token
 
-API_KEY='AIzaSyC72WxoQfypYne1efKopdEcRWh0W-GUm0c'
+API_KEY='AIzaSyClJ0peHrzwgt47uBgjYoMepA7TCF35dzM'
+
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token}) 
 
 @csrf_exempt
 def login(request):
@@ -46,7 +51,6 @@ def get_csrf_token(request):
 def chat(request):
     if request.method == "POST":
         try:
-            # Log the incoming request body
             print("Request body:", request.body)
             
             try:
@@ -56,23 +60,19 @@ def chat(request):
                 print("JSON parsing error:", json_err)
                 return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
 
-            # Ensure all required fields are present
             required_fields = ['height', 'weight', 'age', 'gender', 'goal_weight', 'time','veg_nonveg']
             for field in required_fields:
                 if field not in data or not data[field]:
                     return JsonResponse({'error': f'{field} cannot be empty'}, status=400)
 
-            # Prepare user message for AI model
-            user_message = json.dumps(data)  # Convert the form data to a JSON string
+            user_message = json.dumps(data)  
 
-            # Configure the AI model
             try:
                 genai.configure(api_key=API_KEY)
             except Exception as e:
                 print("Error in configuring genai:", e)
                 return JsonResponse({'error': 'Failed to configure AI model'}, status=500)
 
-            # Define AI model's generation configuration
             generation_config = {
                 "temperature": 0,
                 "top_p": 0.95,
@@ -98,14 +98,12 @@ def chat(request):
                 print("Error creating AI model:", e)
                 return JsonResponse({'error': 'Failed to initialize AI model'}, status=500)
 
-            # Start a chat session with the AI model
             try:
                 chat_session = model.start_chat(history=[])
             except Exception as e:
                 print("Error starting chat session:", e)
                 return JsonResponse({'error': 'Failed to start chat session'}, status=500)
 
-            # Send the message to the AI and get a response
             try:
                 print("Sending message to AI:", user_message)
                 ai_response = chat_session.send_message(user_message)
@@ -114,7 +112,6 @@ def chat(request):
                 print("Error sending message to AI model:", e)
                 return JsonResponse({'error': 'Failed to communicate with AI model'}, status=500)
 
-            # Parse the AI response
             try:
                 response_json = json.loads(ai_response.text)
                 print("Parsed AI response:", response_json)
@@ -131,19 +128,18 @@ def chat(request):
     return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
 
-@csrf_exempt  # Disable CSRF for simplicity in development (make sure you handle security properly later)
+@csrf_exempt
 def buy_product(request):
     if request.method == "POST":
         data = json.loads(request.body)
 
-        # Create a new `buy` instance and save it in the database
         new_purchase = buy(
             buy_name=data.get('name'),
             number=data.get('phone'),
             address=data.get('address'),
             pincode=data.get('pincode'),
             card_no=data.get('card'),
-            paid=data.get('total_price')  # Store the total price
+            paid=data.get('total_price'),
         )
         new_purchase.save()
 
@@ -156,17 +152,14 @@ def buy_product(request):
 def chatbox(request):
     if request.method == 'POST':
         try:
-            # Parse the incoming data from the request
             data = json.loads(request.body)
             user_message = data.get('msg')
 
             if not user_message:
                 return JsonResponse({'error': 'Message is required'}, status=400)
 
-            # Initialize the Gemini AI with the API key
             genai.configure(api_key=API_KEY)
 
-            # Create a chat model configuration
             generation_config = {
                 "temperature": 0,
                 "top_p": 0.95,
@@ -175,27 +168,22 @@ def chatbox(request):
                 "response_mime_type": "text/plain",
             }
 
-            # Instantiate the chat model
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-pro",
                 generation_config=generation_config,
                 system_instruction="You are a diet recommendation specialist. Answer based on food, health, and calorie requirements."
             )
 
-            # Start a chat session
             chat_session = model.start_chat(history=[])
 
-            # Send the user's message to the Gemini AI model
             response = chat_session.send_message(user_message)
 
-            # Get AI's response
             ai_message = response.text
 
-            # Return the response to the frontend
             return JsonResponse({'message': ai_message})
 
         except Exception as e:
-            print(f"Error: {e}")  # Log the error for debugging
+            print(f"Error: {e}") 
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
@@ -215,7 +203,6 @@ def del_data(request):
 def get_meal_by_cal(request):
     if request.method == "POST":
         try:
-            # Log the incoming request body
             print("Request body:", request.body)
             
             try:
@@ -225,23 +212,19 @@ def get_meal_by_cal(request):
                 print("JSON parsing error:", json_err)
                 return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
 
-            # Ensure all required fields are present
             required_fields = ['protein', 'carbs', 'fat', 'suger', 'fiber', 'calory']
             for field in required_fields:
                 if field not in data or not data[field]:
                     return JsonResponse({'error': f'{field} cannot be empty'}, status=400)
 
-            # Prepare user message for AI model
-            user_message = json.dumps(data)  # Convert the form data to a JSON string
+            user_message = json.dumps(data)  
 
-            # Configure the AI model
             try:
                 genai.configure(api_key=API_KEY)
             except Exception as e:
                 print("Error in configuring genai:", e)
                 return JsonResponse({'error': 'Failed to configure AI model'}, status=500)
 
-            # Define AI model's generation configuration
             generation_config = {
                 "temperature": 0,
                 "top_p": 0.95,
@@ -265,14 +248,12 @@ def get_meal_by_cal(request):
                 print("Error creating AI model:", e)
                 return JsonResponse({'error': 'Failed to initialize AI model'}, status=500)
 
-            # Start a chat session with the AI model
             try:
                 chat_session = model.start_chat(history=[])
             except Exception as e:
                 print("Error starting chat session:", e)
                 return JsonResponse({'error': 'Failed to start chat session'}, status=500)
 
-            # Send the message to the AI and get a response
             try:
                 print("Sending message to AI:", user_message)
                 ai_response = chat_session.send_message(user_message)
@@ -281,7 +262,6 @@ def get_meal_by_cal(request):
                 print("Error sending message to AI model:", e)
                 return JsonResponse({'error': 'Failed to communicate with AI model'}, status=500)
 
-            # Parse the AI response
             try:
                 response_json = json.loads(ai_response.text)
                 print("Parsed AI response:", response_json)
@@ -311,13 +291,11 @@ def get_meal_by_ingredient(request):
 
             user_message = json.dumps(data)
 
-            # Configure the AI model
             try:
                 genai.configure(api_key=API_KEY)
             except Exception as e:
                 return JsonResponse({'error': 'Failed to configure AI model'}, status=500)
 
-            # Define AI model's generation configuration
             generation_config = {
                 "temperature": 0,
                 "top_p": 0.95,
